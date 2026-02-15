@@ -28,6 +28,16 @@ class OpenClawDashboard:
         self.openclaw_url = openclaw_url or config_pi4b.OPENCLAW["default_url"]
         self.running = False
 
+        # Initialize GPIO system first (only in production mode)
+        if not demo_mode:
+            try:
+                import RPi.GPIO as GPIO
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setwarnings(False)
+                print("[Pi4B] GPIO initialized (BCM mode)")
+            except Exception as e:
+                print(f"[Pi4B] GPIO initialization warning: {e}")
+
         # Initialize displays
         print("Initializing HDMI display...")
         self.hdmi_display = HDMIDisplay(demo_mode=demo_mode)
@@ -127,6 +137,15 @@ class OpenClawDashboard:
         if self.touch:
             self.touch.stop()
             self.touch.cleanup()
+
+        # Cleanup GPIO pins (only non-SPI pins)
+        if not self.demo_mode:
+            try:
+                import RPi.GPIO as GPIO
+                GPIO.cleanup(config_pi4b.GPIO_PINS)
+                print("[Pi4B] GPIO cleanup complete")
+            except Exception as e:
+                print(f"[Pi4B] GPIO cleanup warning: {e}")
 
         print("Shutdown complete.")
 
