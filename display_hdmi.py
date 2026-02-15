@@ -2,7 +2,7 @@
 ElecLab 7" HDMI Display Driver (1024x600)
 Main conversation/activity display using Linux framebuffer.
 
-For Arduino UNO Q (CM4-based).
+Works with both Arduino UNO Q (CM4-based) and Raspberry Pi 4B.
 """
 
 import threading
@@ -10,10 +10,21 @@ import time
 import mmap
 import os
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from PIL import Image, ImageDraw, ImageFont
 
-import config_uno_q as config
+# Try to import the appropriate config
+try:
+    import config_pi4b as config
+    print("[HDMI] Using Pi 4B configuration")
+except ImportError:
+    try:
+        import config_uno_q as config
+        print("[HDMI] Using UNO Q configuration")
+    except ImportError:
+        import config
+        print("[HDMI] Using default configuration")
+
 from ui.cyberpunk_theme import CyberpunkTheme
 from ui.molty import Molty, MoltyState
 from ui.activity_feed import ActivityFeed
@@ -200,6 +211,59 @@ class HDMIDisplay:
         with self.lock:
             self._status_text = text
         self.render()
+
+    def update_messages(self, messages: List[Dict[str, Any]]):
+        """
+        Update display with new messages from OpenClaw.
+
+        Args:
+            messages: List of message dicts with 'role', 'content', 'timestamp'
+        """
+        if not messages:
+            return
+
+        # Add messages to activity feed
+        for msg in messages:
+            role = msg.get('role', 'unknown')
+            content = msg.get('content', '')
+
+            # Truncate long messages for activity feed
+            if len(content) > 100:
+                content = content[:97] + "..."
+
+            activity_type = "user" if role == "user" else "assistant"
+            self.add_activity(activity_type, content)
+
+        # Update Molty state based on activity
+        if messages:
+            last_msg = messages[-1]
+            if last_msg.get('role') == 'assistant':
+                self.set_molty_state(MoltyState.TALKING)
+            else:
+                self.set_molty_state(MoltyState.LISTENING)
+
+    def update_status(self, status: Dict[str, Any]):
+        """
+        Update display with status information from OpenClaw.
+
+        Args:
+            status: Dict with 'connected', 'model', 'task_summary', etc.
+        """
+        if not status:
+            return
+
+        # Update status text
+        if status.get('is_streaming'):
+            self.set_status("Streaming response...")
+            self.set_molty_state(MoltyState.THINKING)
+        elif status.get('connected'):
+            task = status.get('task_summary', 'Idle')
+            model = status.get('model', 'unknown')
+            self.set_status(f"{task} • {model}")
+            self.set_molty_state(MoltyState.IDLE)
+        else:
+            self.set_status("Disconnected from OpenClaw")
+            self.set_molty_state(MoltyState.SLEEPING)
 
     def scroll(self, delta):
         """Scroll the activity feed."""

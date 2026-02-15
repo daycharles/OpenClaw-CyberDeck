@@ -156,15 +156,26 @@ class OpenClawDashboard:
         print("Dashboard running. Press Ctrl+C to exit.")
 
         try:
+            last_message_count = 0
             while self.running:
-                # Update HDMI display periodically (if available)
+                # Update HDMI display with new messages and status
                 try:
                     messages = self.bridge.get_all_messages()
                     status = self.bridge.get_status()
-                    # HDMI display update methods may not exist, skip for now
-                    # The ILI9341 display gets updates via its own thread
+
+                    # Only update if there are new messages
+                    if len(messages) > last_message_count:
+                        new_messages = messages[last_message_count:]
+                        self.hdmi_display.update_messages(new_messages)
+                        last_message_count = len(messages)
+
+                    # Update status
+                    self.hdmi_display.update_status(status)
+
                 except Exception as e:
-                    pass  # Ignore HDMI display errors
+                    # Ignore HDMI display errors in case framebuffer isn't available
+                    if self.running:  # Only print if not shutting down
+                        pass  # Silent fail for now
 
                 time.sleep(0.5)  # Update every 500ms
         except KeyboardInterrupt:
