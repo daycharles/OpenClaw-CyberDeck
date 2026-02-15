@@ -39,27 +39,28 @@ class OpenClawDashboard:
         print("Initializing touch handler...")
         self.touch = TouchHandler(demo_mode=demo_mode)
 
-        # Set up touch callbacks
-        self.touch.on_tap_top = lambda: self.handle_touch_region("top")
-        self.touch.on_tap_bottom = lambda: self.handle_touch_region("bottom")
-        
+        # Set up touch callbacks (they receive x, y coordinates)
+        self.touch.on_tap_top = lambda x, y: self.handle_touch_region("top", x, y)
+        self.touch.on_tap_bottom = lambda x, y: self.handle_touch_region("bottom", x, y)
+
         # Initialize OpenClaw bridge
+        print("Initializing OpenClaw bridge...")
         self.bridge = OpenClawBridge(demo_mode=demo_mode)
         self.bridge.set_callbacks(
             on_message_complete=self.handle_message_complete,
             on_status_change=self.handle_status_change
         )
 
-    def handle_touch_region(self, region):
+    def handle_touch_region(self, region, x, y):
         """Handle touch events from the control display."""
         # Simple region-based commands
         # Top half = New Chat, Bottom half = Clear
         if region == "top":
-            print("Touch: Top region - Simulating activity")
+            print(f"Touch: Top region at ({x}, {y}) - Simulating activity")
             # In demo mode, just add a test message
             print("[Touch] Top tap - adding test message")
         elif region == "bottom":
-            print("Touch: Bottom region - Simulating clear")
+            print(f"Touch: Bottom region at ({x}, {y}) - Simulating clear")
             print("[Touch] Bottom tap - would clear display")
 
     def handle_message_complete(self, message):
