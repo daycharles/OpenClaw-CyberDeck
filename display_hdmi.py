@@ -100,11 +100,14 @@ class HDMIDisplay:
             
     def initialize(self):
         """Initialize the framebuffer."""
+        print(f"[HDMI] Initializing display (demo_mode={self.demo_mode})")
+
         if self.demo_mode:
             print("[HDMI] Running in demo mode (no framebuffer)")
             return True
-            
+
         try:
+            print(f"[HDMI] Opening framebuffer: {self.framebuffer_path}")
             # Open framebuffer
             self.fb = os.open(self.framebuffer_path, os.O_RDWR)
             
@@ -219,13 +222,18 @@ class HDMIDisplay:
         Args:
             messages: List of message dicts with 'role', 'content', 'timestamp'
         """
+        print(f"[HDMI] update_messages called with {len(messages) if messages else 0} messages")
+
         if not messages:
+            print("[HDMI] No messages to update")
             return
 
         # Add messages to activity feed
         for msg in messages:
             role = msg.get('role', 'unknown')
             content = msg.get('content', '')
+
+            print(f"[HDMI] Adding message: {role}: {content[:50]}...")
 
             # Truncate long messages for activity feed
             if len(content) > 100:
@@ -238,8 +246,10 @@ class HDMIDisplay:
         if messages:
             last_msg = messages[-1]
             if last_msg.get('role') == 'assistant':
+                print("[HDMI] Setting Molty to TALKING")
                 self.set_molty_state(MoltyState.TALKING)
             else:
+                print("[HDMI] Setting Molty to LISTENING")
                 self.set_molty_state(MoltyState.LISTENING)
 
     def update_status(self, status: Dict[str, Any]):
@@ -249,19 +259,25 @@ class HDMIDisplay:
         Args:
             status: Dict with 'connected', 'model', 'task_summary', etc.
         """
+        print(f"[HDMI] update_status called with: {status}")
+
         if not status:
+            print("[HDMI] No status to update")
             return
 
         # Update status text
         if status.get('is_streaming'):
+            print("[HDMI] Status: Streaming")
             self.set_status("Streaming response...")
             self.set_molty_state(MoltyState.THINKING)
         elif status.get('connected'):
             task = status.get('task_summary', 'Idle')
             model = status.get('model', 'unknown')
+            print(f"[HDMI] Status: Connected - {task} • {model}")
             self.set_status(f"{task} • {model}")
             self.set_molty_state(MoltyState.IDLE)
         else:
+            print("[HDMI] Status: Disconnected")
             self.set_status("Disconnected from OpenClaw")
             self.set_molty_state(MoltyState.SLEEPING)
 

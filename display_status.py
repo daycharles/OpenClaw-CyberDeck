@@ -125,6 +125,8 @@ class StatusDisplay:
 
     def initialize(self):
         """Initialize the display hardware."""
+        print(f"[Display2] Initializing (demo_mode={self.demo_mode}, hardware_available={HARDWARE_AVAILABLE})")
+
         if self.demo_mode and not HARDWARE_AVAILABLE:
             print("[Display2] Running in demo mode (no hardware)")
             return True
@@ -368,6 +370,8 @@ class StatusDisplay:
 
     def render(self):
         """Render the cyberpunk command panel."""
+        print("[Display2] render() called")
+
         width = config.SMALL_DISPLAY["width"]
         height = config.SMALL_DISPLAY["height"]
         bz = config.SMALL_BEZEL
@@ -407,10 +411,15 @@ class StatusDisplay:
     def run(self, get_status_func=None, get_notifications_func=None, interval=1.0):
         """Main render loop."""
         self.running = True
-        print("[Display2] Starting render loop")
+        print(f"[Display2] Starting render loop (interval={interval}s)")
 
+        loop_count = 0
         while self.running:
             try:
+                loop_count += 1
+                if loop_count % 10 == 0:  # Log every 10th iteration
+                    print(f"[Display2] Render loop iteration {loop_count}")
+
                 # Get updated status if callback provided
                 if get_status_func:
                     status = get_status_func()

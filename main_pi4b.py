@@ -157,25 +157,32 @@ class OpenClawDashboard:
 
         try:
             last_message_count = 0
+            print("[Pi4B] Starting main update loop...")
+
             while self.running:
                 # Update HDMI display with new messages and status
                 try:
                     messages = self.bridge.get_all_messages()
                     status = self.bridge.get_status()
 
+                    print(f"[Pi4B] Got {len(messages)} messages, {last_message_count} seen before")
+
                     # Only update if there are new messages
                     if len(messages) > last_message_count:
                         new_messages = messages[last_message_count:]
+                        print(f"[Pi4B] Updating HDMI with {len(new_messages)} new messages")
                         self.hdmi_display.update_messages(new_messages)
                         last_message_count = len(messages)
 
                     # Update status
+                    print(f"[Pi4B] Updating HDMI status: {status}")
                     self.hdmi_display.update_status(status)
 
                 except Exception as e:
-                    # Ignore HDMI display errors in case framebuffer isn't available
-                    if self.running:  # Only print if not shutting down
-                        pass  # Silent fail for now
+                    # Log HDMI display errors for debugging
+                    print(f"[Pi4B] HDMI display error: {e}")
+                    import traceback
+                    traceback.print_exc()
 
                 time.sleep(0.5)  # Update every 500ms
         except KeyboardInterrupt:
