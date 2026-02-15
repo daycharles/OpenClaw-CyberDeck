@@ -105,6 +105,38 @@ class OpenClawDashboard:
         """Start the dashboard."""
         self.running = True
 
+        # Initialize displays
+        if not self.demo_mode:
+            print("Initializing display hardware...")
+            # Initialize HDMI display (may not work on all setups)
+            try:
+                if not self.hdmi_display.initialize():
+                    print("[WARNING] HDMI display initialization failed (continuing anyway)")
+            except Exception as e:
+                print(f"[WARNING] HDMI display error: {e}")
+
+            # Initialize ILI9341 control display
+            if not self.control_display.initialize():
+                print("[ERROR] Failed to initialize ILI9341 display")
+
+        # Start HDMI display (may fail silently if not available)
+        try:
+            self.hdmi_display.start()
+        except Exception as e:
+            print(f"[WARNING] HDMI display start failed: {e}")
+
+        # Start control display rendering loop in a thread
+        print("[Pi4B] Starting ILI9341 display render loop...")
+        control_display_thread = threading.Thread(
+            target=self.control_display.run,
+            kwargs={
+                "get_status_func": lambda: self.bridge.get_status(),
+                "interval": 0.5  # Update twice per second
+            },
+            daemon=True
+        )
+        control_display_thread.start()
+
         # Initialize and start touch polling in a thread
         if not self.demo_mode:
             self.touch.initialize()
@@ -125,7 +157,16 @@ class OpenClawDashboard:
 
         try:
             while self.running:
-                time.sleep(0.1)
+                # Update HDMI display periodically (if available)
+                try:
+                    messages = self.bridge.get_all_messages()
+                    status = self.bridge.get_status()
+                    # HDMI display update methods may not exist, skip for now
+                    # The ILI9341 display gets updates via its own thread
+                except Exception as e:
+                    pass  # Ignore HDMI display errors
+
+                time.sleep(0.5)  # Update every 500ms
         except KeyboardInterrupt:
             print("\nShutting down...")
             self.stop()
@@ -133,6 +174,13 @@ class OpenClawDashboard:
     def stop(self):
         """Stop the dashboard and cleanup."""
         self.running = False
+
+        # Stop displays
+        if self.hdmi_display:
+            self.hdmi_display.stop()
+
+        if self.control_display:
+            self.control_display.stop()
 
         if self.touch:
             self.touch.stop()
