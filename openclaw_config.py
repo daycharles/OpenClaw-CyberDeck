@@ -33,7 +33,8 @@ class OpenClawConfig:
 
     # Connection settings
     url: str = "ws://localhost:18789"
-    password: Optional[str] = None
+    password: Optional[str] = None  # Alias for token
+    token: Optional[str] = None     # Gateway authentication token
 
     # Tailscale settings
     use_tailscale: bool = False
@@ -81,6 +82,13 @@ class OpenClawConfig:
             config.url = cli_url
         if cli_password:
             config.password = cli_password
+            config.token = cli_password  # Use password as token
+
+        # Sync password and token (they're aliases)
+        if config.password and not config.token:
+            config.token = config.password
+        elif config.token and not config.password:
+            config.password = config.token
 
         return config
 
@@ -114,6 +122,7 @@ class OpenClawConfig:
         env_mappings = {
             "OPENCLAW_URL": "url",
             "OPENCLAW_PASSWORD": "password",
+            "OPENCLAW_TOKEN": "token",
             "OPENCLAW_TAILSCALE_HOST": "tailscale_hostname",
             "OPENCLAW_AUTO_RECONNECT": "auto_reconnect",
             "OPENCLAW_RECONNECT_DELAY": "reconnect_delay",
@@ -143,6 +152,7 @@ class OpenClawConfig:
         mappings = {
             "url": "url",
             "password": "password",
+            "token": "token",
             "use_tailscale": "use_tailscale",
             "tailscale_hostname": "tailscale_hostname",
             "auto_reconnect": "auto_reconnect",
@@ -201,7 +211,7 @@ class OpenClawConfig:
         return (
             f"OpenClawConfig(\n"
             f"  url={self.url}\n"
-            f"  password={'***' if self.password else None}\n"
+            f"  token={'***' if self.token else None}\n"
             f"  use_tailscale={self.use_tailscale}\n"
             f"  tailscale_hostname={self.tailscale_hostname}\n"
             f"  auto_reconnect={self.auto_reconnect}\n"
@@ -221,8 +231,10 @@ def create_sample_config(path: Optional[str] = None, create_env: bool = True):
 # Use Tailscale IP for remote access (e.g., ws://100.x.x.x:18789)
 OPENCLAW_URL=ws://localhost:18789
 
-# Optional: Authentication password
-OPENCLAW_PASSWORD=
+# Required: Gateway authentication token
+# Find this in your OpenClaw server config (gateway.auth.token)
+# Example: OPENCLAW_TOKEN=your-secret-token-here
+OPENCLAW_TOKEN=
 
 # Optional: Tailscale settings
 OPENCLAW_USE_TAILSCALE=false

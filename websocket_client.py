@@ -101,6 +101,7 @@ class OpenClawWebSocketClient:
         self,
         url: str = "ws://localhost:18789",
         password: Optional[str] = None,
+        token: Optional[str] = None,
         on_message_chunk: Optional[Callable[[str, str], None]] = None,
         on_message_complete: Optional[Callable[[Dict], None]] = None,
         on_notification: Optional[Callable[[Notification], None]] = None,
@@ -108,7 +109,9 @@ class OpenClawWebSocketClient:
         on_connection_change: Optional[Callable[[ConnectionState], None]] = None,
     ):
         self.url = url
-        self.password = password
+        # Token and password are aliases - prefer token
+        self.token = token or password
+        self.password = self.token  # Keep for backward compatibility
 
         # Callbacks (thread-safe via queue)
         self._on_message_chunk = on_message_chunk
@@ -449,7 +452,7 @@ class OpenClawWebSocketClient:
         client_mode = "cli"
         role = "operator"
         scopes = ["operator.read", "operator.write", "operator.admin"]
-        token = self.password or ""
+        token = self.token or ""
 
         connect_params = {
             "minProtocol": 3,

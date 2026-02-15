@@ -130,7 +130,7 @@ class OpenClawBridge:
         try:
             self._ws_client = OpenClawWebSocketClient(
                 url=self.config.get_effective_url(),
-                password=self.config.password,
+                token=self.config.token,
                 on_message_chunk=self._handle_ws_message_chunk,
                 on_message_complete=self._handle_ws_message_complete,
                 on_notification=self._handle_ws_notification,
