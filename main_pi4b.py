@@ -14,29 +14,34 @@ from display_hdmi import HDMIDisplay
 from display_status import StatusDisplay  # Reuse existing ILI9341 driver
 from touch_handler import TouchHandler
 from openclaw_bridge import OpenClawBridge
-import config_pi4b as config
+import config_pi4b
+import config
+
+# Copy Pi 4B touch settings to main config so TouchHandler can use them
+config.TOUCH = config_pi4b.TOUCH
 
 class OpenClawDashboard:
     """Main coordinator for dual-display OpenClaw dashboard on Pi 4B."""
-    
+
     def __init__(self, demo_mode=False, openclaw_url=None):
         self.demo_mode = demo_mode
-        self.openclaw_url = openclaw_url or config.OPENCLAW["default_url"]
+        self.openclaw_url = openclaw_url or config_pi4b.OPENCLAW["default_url"]
         self.running = False
-        
+
         # Initialize displays
         print("Initializing HDMI display...")
         self.hdmi_display = HDMIDisplay(demo_mode=demo_mode)
-        
+
         print("Initializing ILI9341 control display...")
         self.control_display = StatusDisplay(demo_mode=demo_mode)
-        
+
         # Initialize touch handler
         print("Initializing touch handler...")
-        self.touch = TouchHandler(
-            cs_pin=config.TOUCH["cs_pin"],
-            callback=self.handle_touch
-        )
+        self.touch = TouchHandler(demo_mode=demo_mode)
+
+        # Set up touch callbacks
+        self.touch.on_tap_top = lambda: self.handle_touch_region("top")
+        self.touch.on_tap_bottom = lambda: self.handle_touch_region("bottom")
         
         # Initialize OpenClaw bridge (if not in demo mode)
         self.bridge = None
@@ -47,14 +52,17 @@ class OpenClawDashboard:
                 on_activity=self.handle_activity,
                 on_status_change=self.handle_status_change
             )
-    
-    def handle_touch(self, x, y):
+
+    def handle_touch_region(self, region):
         """Handle touch events from the control display."""
-        # Map touch coordinates to button presses
-        button = self.control_display.get_button_at(x, y)
-        if button:
-            print(f"Button pressed: {button}")
-            self.execute_command(button)
+        # Simple region-based commands
+        # Top half = New Chat, Bottom half = Clear
+        if region == "top":
+            print("Touch: Top region - New Chat")
+            self.execute_command("new_chat")
+        elif region == "bottom":
+            print("Touch: Bottom region - Clear")
+            self.execute_command("clear")
     
     def execute_command(self, command):
         """Execute a command from button press."""
@@ -110,19 +118,21 @@ class OpenClawDashboard:
             ("tool_use", "Reading config_pi4b.py"),
             ("system", "Configuration loaded successfully"),
         ]
-        
+
         idx = 0
         while self.running:
             activity_type, content = demo_activities[idx % len(demo_activities)]
             self.handle_activity(activity_type, content)
             idx += 1
-            time.sleep(config.DEMO["activity_interval"])
+            time.sleep(config_pi4b.DEMO["activity_interval"])
     
     def run(self):
         """Start the dashboard."""
         self.running = True
-        
-        # Start touch polling
+
+        # Initialize and start touch polling
+        if not self.demo_mode:
+            self.touch.initialize()
         self.touch.start()
         
         # Start OpenClaw bridge or demo mode
