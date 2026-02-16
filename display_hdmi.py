@@ -186,16 +186,14 @@ class HDMIDisplay:
         # Activity feed
         feed_y = header_height + 10
         feed_height = self.height - header_height - footer_height - 20
-        self.activity_feed.render_on_image(img, activity_x + 10, feed_y,
-                                          self.width - activity_x - 20, feed_height,
-                                          self.fonts, self._scroll_offset)
+        feed_rect = (activity_x + 10, feed_y, self.width - activity_x - 30, feed_height)
+        self.activity_feed.render(draw, feed_rect, self._status_text, self._scroll_offset)
 
-        # Footer status bar
+        # Footer status bar (already rendered by activity_feed.render)
+        # Just add the decorative line
         footer_y = self.height - footer_height
         draw.line([activity_x, footer_y, self.width, footer_y],
                  fill=config.CYBERPUNK_COLORS["neon_cyan"], width=2)
-        draw.text((activity_x + 20, footer_y + footer_height // 2), f"▌{self._status_text}",
-                 font=self.fonts["small"], fill=config.CYBERPUNK_COLORS["text_primary"], anchor="lm")
 
         self.display_image(img)
 
