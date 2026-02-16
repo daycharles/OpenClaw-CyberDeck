@@ -16,10 +16,10 @@ LARGE_DISPLAY = {
     "spi_speed_hz": 16000000,  # 16MHz
 }
 
-# Small Display (ILI9341 320x240) - CE1
+# Small Display (ILI9341 240x320 portrait) - CE1
 SMALL_DISPLAY = {
-    "width": 320,
-    "height": 240,
+    "width": 240,
+    "height": 320,
     "spi_bus": 0,
     "spi_device": 1,  # CE1
     "dc_pin": 22,

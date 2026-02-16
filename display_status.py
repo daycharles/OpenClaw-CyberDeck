@@ -222,7 +222,7 @@ class StatusDisplay:
         self._command(0xC7); self._data(0x86)  # VCOM control 2
 
         self._command(config.CMD_MADCTL)
-        self._data(0x40)  # MX=1, RGB
+        self._data(0x48)  # MY=0, MX=1, MV=0, ML=0, BGR=1 (portrait mode)
         self._command(config.CMD_COLMOD)
         self._data(0x55)  # 16-bit color (RGB565)
 
