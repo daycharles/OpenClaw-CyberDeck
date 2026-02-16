@@ -64,9 +64,9 @@ DEFAULT_BUTTONS = [
         x=5, y=174, width=152, height=62
     ),
     CommandButton(
-        id="random",
-        label="RANDOM",
-        command="Do something useful",
+        id="tui",
+        label="TUI",
+        command="__LAUNCH_TUI__",  # Special command to launch TUI
         x=163, y=174, width=152, height=62
     ),
 ]

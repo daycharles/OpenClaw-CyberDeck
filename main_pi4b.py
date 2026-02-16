@@ -75,8 +75,13 @@ class OpenClawDashboard:
             # Flash the button
             self.control_display.command_panel.set_button_state(button.id, "pressed")
 
-            # Send the command to OpenClaw
-            if not self.demo_mode:
+            # Check for special commands
+            if button.command == "__LAUNCH_TUI__":
+                print("[Touch] Launching OpenClaw TUI...")
+                self.launch_tui()
+                self.control_display.command_panel.set_button_state(button.id, "success")
+            elif not self.demo_mode:
+                # Send regular command to OpenClaw
                 print(f"[Touch] Sending command: {button.command}")
                 self.bridge.send_message(button.command)
                 # Set button to running state
@@ -85,6 +90,43 @@ class OpenClawDashboard:
                 print(f"[Touch] Demo mode - would send: {button.command}")
         else:
             print(f"[Touch] No button at ({x}, {y})")
+
+    def launch_tui(self):
+        """Launch OpenClaw TUI in a new terminal window."""
+        import subprocess
+        import os
+
+        # Get the OpenClaw directory from config
+        openclaw_dir = config_pi4b.OPENCLAW.get("tui_path", os.path.expanduser("~/OpenClaw"))
+
+        # Check if directory exists
+        if not os.path.exists(openclaw_dir):
+            print(f"[TUI] OpenClaw directory not found: {openclaw_dir}")
+            print("[TUI] Please set OPENCLAW.tui_path in config_pi4b.py")
+            return
+
+        try:
+            # Launch in a new terminal window (works on Raspberry Pi Desktop)
+            # Using lxterminal (default on Raspberry Pi OS)
+            subprocess.Popen([
+                "lxterminal",
+                "--title=OpenClaw TUI",
+                "--working-directory=" + openclaw_dir,
+                "-e", "bash -c 'npm start; exec bash'"
+            ])
+            print(f"[TUI] Launched OpenClaw TUI from {openclaw_dir}")
+        except FileNotFoundError:
+            # Try xterm as fallback
+            try:
+                subprocess.Popen([
+                    "xterm",
+                    "-title", "OpenClaw TUI",
+                    "-e", f"cd {openclaw_dir} && npm start; bash"
+                ])
+                print(f"[TUI] Launched OpenClaw TUI (xterm) from {openclaw_dir}")
+            except FileNotFoundError:
+                print("[TUI] ERROR: No terminal emulator found (tried lxterminal, xterm)")
+                print("[TUI] Please install lxterminal: sudo apt-get install lxterminal")
 
     def handle_message_complete(self, message):
         """Handle completed message from OpenClaw."""

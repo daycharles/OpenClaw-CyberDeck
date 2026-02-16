@@ -106,6 +106,7 @@ OPENCLAW = {
     "default_url": "ws://localhost:18789",
     "reconnect_delay": 5,  # seconds
     "ping_interval": 30,   # seconds
+    "tui_path": "/home/pi/OpenClaw",  # Path to OpenClaw installation for TUI button
 }
 
 # Demo Mode Settings
