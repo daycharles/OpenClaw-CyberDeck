@@ -158,7 +158,7 @@ class HDMIDisplay:
         draw.line([molty_width, 0, molty_width, self.height], fill=config.CYBERPUNK_COLORS["neon_cyan"], width=3)
         
         # Render Molty sprite
-        molty_sprite = self.molty.get_current_sprite()
+        molty_sprite = self.molty.get_sprite()
         if molty_sprite:
             # Scale sprite for larger display
             molty_sprite = molty_sprite.resize((120, 120))
@@ -230,18 +230,13 @@ class HDMIDisplay:
         Args:
             messages: List of message dicts with 'role', 'content', 'timestamp'
         """
-        print(f"[HDMI] update_messages called with {len(messages) if messages else 0} messages")
-
         if not messages:
-            print("[HDMI] No messages to update")
             return
 
         # Add messages to activity feed
         for msg in messages:
             role = msg.get('role', 'unknown')
             content = msg.get('content', '')
-
-            print(f"[HDMI] Adding message: {role}: {content[:50]}...")
 
             # Truncate long messages for activity feed
             if len(content) > 100:
@@ -254,10 +249,8 @@ class HDMIDisplay:
         if messages:
             last_msg = messages[-1]
             if last_msg.get('role') == 'assistant':
-                print("[HDMI] Setting Molty to WORKING (assistant response)")
                 self.set_molty_state(MoltyState.WORKING)
             else:
-                print("[HDMI] Setting Molty to LISTENING (user message)")
                 self.set_molty_state(MoltyState.LISTENING)
 
     def update_status(self, status: Dict[str, Any]):
@@ -267,25 +260,19 @@ class HDMIDisplay:
         Args:
             status: Dict with 'connected', 'model', 'task_summary', etc.
         """
-        print(f"[HDMI] update_status called with: {status}")
-
         if not status:
-            print("[HDMI] No status to update")
             return
 
         # Update status text
         if status.get('is_streaming'):
-            print("[HDMI] Status: Streaming")
             self.set_status("Streaming response...")
             self.set_molty_state(MoltyState.THINKING)
         elif status.get('connected'):
             task = status.get('task_summary', 'Idle')
             model = status.get('model', 'unknown')
-            print(f"[HDMI] Status: Connected - {task} • {model}")
             self.set_status(f"{task} • {model}")
             self.set_molty_state(MoltyState.IDLE)
         else:
-            print("[HDMI] Status: Disconnected")
             self.set_status("Disconnected from OpenClaw")
             self.set_molty_state(MoltyState.ERROR)  # Use ERROR state for disconnected
 

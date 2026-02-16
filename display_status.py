@@ -370,8 +370,6 @@ class StatusDisplay:
 
     def render(self):
         """Render the cyberpunk command panel."""
-        print("[Display2] render() called")
-
         width = config.SMALL_DISPLAY["width"]
         height = config.SMALL_DISPLAY["height"]
         bz = config.SMALL_BEZEL

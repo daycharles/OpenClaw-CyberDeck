@@ -165,8 +165,6 @@ class OpenClawDashboard:
                     messages = self.bridge.get_all_messages()
                     status = self.bridge.get_status()
 
-                    print(f"[Pi4B] Got {len(messages)} messages, {last_message_count} seen before")
-
                     # Only update if there are new messages
                     if len(messages) > last_message_count:
                         new_messages = messages[last_message_count:]
@@ -174,8 +172,7 @@ class OpenClawDashboard:
                         self.hdmi_display.update_messages(new_messages)
                         last_message_count = len(messages)
 
-                    # Update status
-                    print(f"[Pi4B] Updating HDMI status: {status}")
+                    # Update status (silently)
                     self.hdmi_display.update_status(status)
 
                 except Exception as e:
