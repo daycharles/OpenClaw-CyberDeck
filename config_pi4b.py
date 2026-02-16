@@ -118,6 +118,11 @@ HDMI_LAYOUT = {
     "molty_panel_width": 300,  # Left panel for Molty mascot
     "padding": 20,
     "activity_item_height": 80,
+    "header_height": 50,  # Top header bar height
+    "footer_height": 30,  # Bottom status bar height
+    "molty_position": (90, 150),  # Molty sprite position (x, y)
+    "molty_label_y": 500,  # Y position for Molty state label
+    "activity_panel_x": 300,  # X position where activity panel starts
 }
 
 # Layout Configuration for ILI9341 Control Display

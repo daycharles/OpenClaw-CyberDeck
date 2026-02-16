@@ -201,7 +201,15 @@ class HDMIDisplay:
 
     def add_activity(self, activity_type, message, details=""):
         """Add an activity to the feed."""
-        self.activity_feed.add_activity(activity_type, message, details)
+        # ActivityFeed uses add_entry, not add_activity
+        # Map activity_type to entry type
+        entry_type = "message"  # Default to message type
+        if activity_type == "user":
+            entry_type = "message"
+        elif activity_type == "assistant":
+            entry_type = "message"
+
+        self.activity_feed.add_entry(entry_type, message, details)
         self.render()
 
     def set_molty_state(self, state: MoltyState):
@@ -246,10 +254,10 @@ class HDMIDisplay:
         if messages:
             last_msg = messages[-1]
             if last_msg.get('role') == 'assistant':
-                print("[HDMI] Setting Molty to TALKING")
-                self.set_molty_state(MoltyState.TALKING)
+                print("[HDMI] Setting Molty to WORKING (assistant response)")
+                self.set_molty_state(MoltyState.WORKING)
             else:
-                print("[HDMI] Setting Molty to LISTENING")
+                print("[HDMI] Setting Molty to LISTENING (user message)")
                 self.set_molty_state(MoltyState.LISTENING)
 
     def update_status(self, status: Dict[str, Any]):
@@ -279,7 +287,7 @@ class HDMIDisplay:
         else:
             print("[HDMI] Status: Disconnected")
             self.set_status("Disconnected from OpenClaw")
-            self.set_molty_state(MoltyState.SLEEPING)
+            self.set_molty_state(MoltyState.ERROR)  # Use ERROR state for disconnected
 
     def scroll(self, delta):
         """Scroll the activity feed."""
