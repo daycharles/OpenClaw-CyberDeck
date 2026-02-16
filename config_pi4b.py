@@ -20,15 +20,15 @@ HDMI_DISPLAY = {
     "rotation": 0,  # 0, 90, 180, 270
 }
 
-# HiLetgo 2.4" ILI9341 (240x320) - Touch Control Display
+# HiLetgo 2.4" ILI9341 (320x240 landscape) - Touch Control Display
 # Using Raspberry Pi 4B GPIO pins:
 # - GPIO 7 (CE1) for SPI CS
 # - GPIO 22 for DC (Data/Command)
 # - GPIO 27 for RST (Reset)
 # - GPIO 23 for Backlight
 ILI9341_DISPLAY = {
-    "width": 240,
-    "height": 320,
+    "width": 320,
+    "height": 240,
     "spi_bus": 0,
     "spi_device": 1,  # CE1 (GPIO 7)
     "dc_pin": 22,     # GPIO 22 - Data/Command
@@ -39,18 +39,19 @@ ILI9341_DISPLAY = {
 
 # Touch Controller (XPT2046) on ILI9341
 # Using GPIO 17 for manual chip select
+# Calibrated for landscape mode (320x240)
 TOUCH = {
     "cs_pin": 17,  # GPIO 17 - Manual chip select
     "spi_speed_hz": 1500000,  # 1.5MHz for touch reads
     "min_pressure": 300,  # Minimum Z value to count as touch
-    # Calibration values (will need calibration for your specific display)
-    "x_min": 300,
-    "x_max": 3900,
-    "y_min": 300,
-    "y_max": 3900,
-    "swap_xy": False,  # Adjust based on orientation
-    "invert_x": False,
-    "invert_y": False,
+    # Calibration values from CLAUDE.md (axes swapped, both inverted)
+    "x_min": 572,
+    "x_max": 3676,
+    "y_min": 777,
+    "y_max": 3476,
+    "swap_xy": True,   # Swap X/Y for landscape mode
+    "invert_x": True,  # Invert X axis
+    "invert_y": True,  # Invert Y axis
 }
 
 # GPIO pins to cleanup (NO SPI pins 9, 10, 11, 7, 8)
