@@ -22,19 +22,19 @@ HDMI_DISPLAY = {
 
 # HiLetgo 2.4" ILI9341 (240x320) - Touch Control Display
 # Using Raspberry Pi 4B GPIO pins:
-# - GPIO 8 (CE0) for SPI CS
-# - GPIO 25 for DC (Data/Command)
-# - GPIO 24 for RST (Reset)
+# - GPIO 7 (CE1) for SPI CS
+# - GPIO 22 for DC (Data/Command)
+# - GPIO 27 for RST (Reset)
 # - GPIO 23 for Backlight
 ILI9341_DISPLAY = {
     "width": 240,
     "height": 320,
     "spi_bus": 0,
-    "spi_device": 0,  # CE0 (GPIO 8)
-    "dc_pin": 25,     # GPIO 25 - Data/Command
-    "rst_pin": 24,    # GPIO 24 - Reset
+    "spi_device": 1,  # CE1 (GPIO 7)
+    "dc_pin": 22,     # GPIO 22 - Data/Command
+    "rst_pin": 27,    # GPIO 27 - Reset
     "bl_pin": 23,     # GPIO 23 - Backlight
-    "spi_speed_hz": 24000000,  # 24MHz
+    "spi_speed_hz": 16000000,  # 16MHz (per CLAUDE.md)
 }
 
 # Touch Controller (XPT2046) on ILI9341
@@ -53,9 +53,9 @@ TOUCH = {
     "invert_y": False,
 }
 
-# GPIO pins to cleanup (NO SPI pins 9, 10, 11, 8)
+# GPIO pins to cleanup (NO SPI pins 9, 10, 11, 7, 8)
 # Only our custom GPIO pins
-GPIO_PINS = [17, 23, 24, 25]
+GPIO_PINS = [17, 22, 23, 27]
 
 # Color Scheme - Cyberpunk Theme (RGB tuples)
 CYBERPUNK_COLORS = {
