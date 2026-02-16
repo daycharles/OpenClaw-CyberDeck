@@ -10,7 +10,7 @@ import argparse
 from pathlib import Path
 
 # Import display drivers
-from display_hdmi import HDMIDisplay
+from display_hdmi_window import HDMIDisplayWindow  # Use windowed version for desktop
 from display_status import StatusDisplay  # Reuse existing ILI9341 driver
 from touch_handler import TouchHandler
 from openclaw_bridge import OpenClawBridge
@@ -39,8 +39,8 @@ class OpenClawDashboard:
                 print(f"[Pi4B] GPIO initialization warning: {e}")
 
         # Initialize displays
-        print("Initializing HDMI display...")
-        self.hdmi_display = HDMIDisplay(demo_mode=demo_mode)
+        print("Initializing HDMI display window...")
+        self.hdmi_display = HDMIDisplayWindow(demo_mode=demo_mode)
 
         print("Initializing ILI9341 control display...")
         self.control_display = StatusDisplay(demo_mode=demo_mode)
