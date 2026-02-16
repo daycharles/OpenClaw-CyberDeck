@@ -248,7 +248,7 @@ class HDMIDisplayWindow:
             else:
                 self.set_molty_state(MoltyState.LISTENING)
 
-    def update_status(self, status: Dict[str, Any]]):
+    def update_status(self, status: Dict[str, Any]):
         """Update display with status information from OpenClaw."""
         if not status:
             return
