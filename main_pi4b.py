@@ -50,8 +50,9 @@ class OpenClawDashboard:
         self.touch = TouchHandler(demo_mode=demo_mode)
 
         # Set up touch callbacks (they receive x, y coordinates)
-        self.touch.on_tap_top = lambda x, y: self.handle_touch_region("top", x, y)
-        self.touch.on_tap_bottom = lambda x, y: self.handle_touch_region("bottom", x, y)
+        # Use a single callback that handles button detection
+        self.touch.on_tap_top = lambda x, y: self.handle_touch(x, y)
+        self.touch.on_tap_bottom = lambda x, y: self.handle_touch(x, y)
 
         # Initialize OpenClaw bridge
         print("Initializing OpenClaw bridge...")
@@ -61,17 +62,29 @@ class OpenClawDashboard:
             on_status_change=self.handle_status_change
         )
 
-    def handle_touch_region(self, region, x, y):
-        """Handle touch events from the control display."""
-        # Simple region-based commands
-        # Top half = New Chat, Bottom half = Clear
-        if region == "top":
-            print(f"Touch: Top region at ({x}, {y}) - Simulating activity")
-            # In demo mode, just add a test message
-            print("[Touch] Top tap - adding test message")
-        elif region == "bottom":
-            print(f"Touch: Bottom region at ({x}, {y}) - Simulating clear")
-            print("[Touch] Bottom tap - would clear display")
+    def handle_touch(self, x, y):
+        """Handle touch events from the touch handler."""
+        print(f"[Touch] Touch detected at ({x}, {y})")
+
+        # Find which button was pressed using the CommandPanel
+        button = self.control_display.command_panel.find_button(x, y)
+
+        if button:
+            print(f"[Touch] Button pressed: {button.label} (id={button.id})")
+
+            # Flash the button
+            self.control_display.command_panel.set_button_state(button.id, "pressed")
+
+            # Send the command to OpenClaw
+            if not self.demo_mode:
+                print(f"[Touch] Sending command: {button.command}")
+                self.bridge.send_message(button.command)
+                # Set button to running state
+                self.control_display.command_panel.set_button_state(button.id, "running")
+            else:
+                print(f"[Touch] Demo mode - would send: {button.command}")
+        else:
+            print(f"[Touch] No button at ({x}, {y})")
 
     def handle_message_complete(self, message):
         """Handle completed message from OpenClaw."""
